@@ -4,6 +4,8 @@ go-higgsml
 `go-higgsml` is a simple starting-kit for the HiggsML challenge:
   http://higgsml.lal.in2p3.fr/
 
+(this `go-higgsml` kit is a transcription of the `python` one from
+[here](http://higgsml.lal.in2p3.fr/software/simplest-python-kit/))
 
 ## Installation
 

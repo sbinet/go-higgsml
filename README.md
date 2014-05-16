@@ -1,7 +1,7 @@
 go-higgsml
 ==========
 
-`go-higgsml` is a simple startup-kit for the HiggsML challenge:
+`go-higgsml` is a simple starting-kit for the HiggsML challenge:
   http://higgsml.lal.in2p3.fr/
 
 

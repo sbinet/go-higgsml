@@ -14,7 +14,7 @@ $ go get github.com/sbinet/go-higgsml
 ## Example
 
 Once you've downloaded the `test.csv` and `training.csv` files from
-kaggle:
+[Kaggle](https://www.kaggle.com/c/connectomics/data):
 
 ```sh
 $ go-higgsml

@@ -215,6 +215,7 @@ func run_prediction(fname, trained, ofname string) error {
 
 		fmt.Fprintf(out, "%d,%d,%s\n", evt.EventId, rank, label)
 	}
+
 	err = out.Sync()
 	if err != nil {
 		return err

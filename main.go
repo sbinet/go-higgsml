@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"os"
 	"sort"
@@ -15,8 +16,7 @@ const (
 )
 
 var (
-	g_train = flag.String("train", "training.csv", "training data file")
-	g_test  = flag.String("test", "test.csv", "input data file")
+	g_train = flag.Bool("train", false, "enable training mode")
 
 	// somewhat arbitrary value, should be optimised
 	g_cutoff = flag.Float64("cut", -22.0, "cut-off value")
@@ -47,12 +47,37 @@ func main() {
 	flag.Parse()
 
 	start := time.Now()
-
-	fmt.Printf("::: read training file [%s]\n", *g_train)
-
-	ftrain, err := os.Open(*g_train)
+	err := run()
+	fmt.Printf("::: timing: %v\n", time.Since(start))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+	}
+	fmt.Printf("::: bye.\n")
+}
+
+func run() error {
+
+	fname := flag.Arg(0)
+	trained := flag.Arg(1)
+
+	if *g_train {
+		err := do_train(fname, trained)
+		return err
+	}
+
+	ofname := flag.Arg(2)
+	err := run_prediction(fname, trained, ofname)
+	return err
+}
+
+func do_train(fname, ofname string) error {
+	var err error
+
+	fmt.Printf("::: read training file [%s]\n", fname)
+
+	ftrain, err := os.Open(fname)
+	if err != nil {
+		return err
 	}
 	defer ftrain.Close()
 
@@ -78,8 +103,9 @@ func main() {
 	}
 
 	if err != nil && err != io.EOF {
-		panic(err)
+		return err
 	}
+	err = nil
 
 	cutoff := *g_cutoff
 
@@ -109,14 +135,19 @@ func main() {
 		sumbkg,
 	)
 
-	fmt.Printf("::: compute the score for the test file entries [%s]\n", *g_test)
-	ftest, err := os.Open(*g_test)
+	return err
+}
+
+func run_prediction(fname, trained, ofname string) error {
+
+	fmt.Printf("::: compute the score for the test file entries [%s]\n", fname)
+	ftest, err := os.Open(fname)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer ftest.Close()
 
-	dec = NewDecoder(ftest)
+	dec := NewDecoder(ftest)
 	tests := make([]Event, 0, 1024)
 	for {
 		i := len(tests)
@@ -132,7 +163,7 @@ func main() {
 	}
 
 	if err != nil && err != io.EOF {
-		panic(err)
+		return err
 	}
 
 	fmt.Printf("::: loop again on test file to load BDT score pairs\n")
@@ -151,11 +182,13 @@ func main() {
 		dict[bdt.Id] = rank + 1 // kaggle asks to start at 1
 	}
 
-	out, err := os.Create("go.submission_simplest.csv")
+	out, err := os.Create(ofname)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer out.Close()
+
+	cutoff := *g_cutoff
 
 	// write header
 	fmt.Fprintf(out, "EventId,RankOrder,Class\n")
@@ -184,9 +217,15 @@ func main() {
 	}
 	err = out.Sync()
 	if err != nil {
-		panic(err)
+		return err
 	}
-	fmt.Printf("::: timing: %v\n", time.Since(start))
+
+	err = out.Close()
+	if err != nil {
+		return err
+	}
+
 	fmt.Printf("::: you can now submit [%s] to Kaggle website\n", out.Name())
-	fmt.Printf("::: bye.\n")
+
+	return err
 }

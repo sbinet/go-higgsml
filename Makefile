@@ -7,5 +7,10 @@ build:
 	@go get -v .
 
 run: build
-	go-higgsml
+	@echo "=== run training ==="
+	go-higgsml -train training.csv trained.dat
+
+	@echo "=== run prediction ==="
+	go-higgsml test.csv trained.dat scores_test.csv
+
 

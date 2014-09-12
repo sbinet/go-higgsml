@@ -135,6 +135,22 @@ func do_train(fname, ofname string) error {
 		sumbkg,
 	)
 
+	otrain, err := os.Create(ofname)
+	if err != nil {
+		return err
+	}
+	defer otrain.Close()
+
+	_, err = fmt.Fprintf(otrain, "cut-off=%v\nams=%v\n", cutoff, ams)
+	if err != nil {
+		return err
+	}
+
+	err = otrain.Close()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
